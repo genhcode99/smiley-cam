@@ -1,9 +1,10 @@
 import React from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { Camera } from 'expo-camera'
-import { ActivityIndicator, Dimensions } from 'react-native'
+import { ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native'
 import styled from 'styled-components'
 import { hidden } from 'ansi-colors'
+import { Ionicons } from '@expo/vector-icons'
 
 //----------< Styled >----------
 const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
@@ -19,11 +20,16 @@ const Text = styled.Text`
   color: white;
   font-size: 22px;
 `
+
+const IconBar = styled.View`
+  margin-top: 20px;
+`
 //------------------------------
 
 export default class App extends React.Component {
   state = {
     hasPermission: null,
+    cameraType: Camera.Constants.Type.front,
   }
 
   componentDidMount = async () => {
@@ -41,7 +47,19 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { hasPermission } = this.state
+    const { hasPermission, cameraType } = this.state
+
+    const switchCameraType = () => {
+      if (cameraType === Camera.Constants.Type.front) {
+        this.setState({
+          cameraType: Camera.Constants.Type.back,
+        })
+      } else {
+        this.setState({
+          cameraType: Camera.Constants.Type.front,
+        })
+      }
+    }
 
     if (hasPermission === true) {
       return (
@@ -53,8 +71,13 @@ export default class App extends React.Component {
               borderRadius: 10,
               overflow: hidden,
             }}
-            type={Camera.Constants.Type.front}
+            type={cameraType}
           />
+          <IconBar>
+            <TouchableOpacity onPress={switchCameraType}>
+              <Ionicons name='camera-reverse' size={50} color='white' />
+            </TouchableOpacity>
+          </IconBar>
           <StatusBar style='dark-content' />
         </CenterView>
       )
