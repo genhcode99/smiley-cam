@@ -1,7 +1,25 @@
 import React from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { Camera } from 'expo-camera'
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Dimensions } from 'react-native'
+import styled from 'styled-components'
+import { hidden } from 'ansi-colors'
+
+//----------< Styled >----------
+const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
+
+const CenterView = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  background-color: cornflowerblue;
+`
+
+const Text = styled.Text`
+  color: white;
+  font-size: 22px;
+`
+//------------------------------
 
 export default class App extends React.Component {
   state = {
@@ -24,26 +42,35 @@ export default class App extends React.Component {
 
   render() {
     const { hasPermission } = this.state
+
     if (hasPermission === true) {
       return (
-        <View>
-          <Text>Has permissions !</Text>
+        <CenterView>
+          <Camera
+            style={{
+              width: WIDTH - 40,
+              height: HEIGHT / 1.5,
+              borderRadius: 10,
+              overflow: hidden,
+            }}
+            type={Camera.Constants.Type.front}
+          />
           <StatusBar style='dark-content' />
-        </View>
+        </CenterView>
       )
     } else if (hasPermission === false) {
       return (
-        <View>
+        <CenterView>
           <Text>Don't have permission for this app</Text>
           <StatusBar style='dark-content' />
-        </View>
+        </CenterView>
       )
     } else {
       return (
-        <>
-          <ActivityIndicator size='small' color='#000000' />
+        <CenterView>
+          <ActivityIndicator size='small' color='#ffffff' />
           <StatusBar style='dark-content' />
-        </>
+        </CenterView>
       )
     }
   }
