@@ -2,6 +2,7 @@ import React from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { Camera } from 'expo-camera'
 import { ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native'
+import * as FileSystem from 'expo-file-system'
 import styled from 'styled-components'
 import { hidden } from 'ansi-colors'
 import { Ionicons } from '@expo/vector-icons'
@@ -28,10 +29,14 @@ const IconBar = styled.View`
 //------------------------------
 
 export default class App extends React.Component {
-  state = {
-    hasPermission: null,
-    cameraType: Camera.Constants.Type.front,
-    smileDetected: false,
+  constructor(props) {
+    super(props)
+    this.state = {
+      hasPermission: null,
+      cameraType: Camera.Constants.Type.front,
+      smileDetected: false,
+    }
+    this.cameraRef = React.createRef()
   }
 
   componentDidMount = async () => {
@@ -81,6 +86,7 @@ export default class App extends React.Component {
               detectLandmarks: FaceDetector.Constants.Landmarks.all,
               runClassifications: FaceDetector.Constants.Classifications.all,
             }}
+            ref={this.cameraRef}
           />
           <IconBar>
             <TouchableOpacity onPress={switchCameraType}>
@@ -113,9 +119,28 @@ export default class App extends React.Component {
         this.setState({
           smileDetected: true,
         })
-        console.log('take photo')
+        this.takePhoto()
       }
     }
   }
+  takePhoto = async () => {
+    try {
+      if (this.cameraRef.current) {
+        let { uri } = await this.cameraRef.current.takePictureAsync({
+          quality: 1,
+          exif: true,
+        })
+        if (uri) {
+          this.savePhoto(uri)
+        }
+      }
+    } catch (error) {
+      alert(error)
+      this.setState({
+        smileDetected: false,
+      })
+    }
+  }
+  savePhoto = async (uri) => {}
 }
 //------------------------------
