@@ -149,20 +149,24 @@ export default class App extends React.Component {
   savePhoto = async (uri) => {
     try {
       const { status } = await MediaLibrary.requestPermissionsAsync()
+
       if (status === 'granted') {
-        const asset = MediaLibrary.createAssetAsync(uri)
-        let album = MediaLibrary.getAlbumsAsync('Smiley Cam')
-        if (!album?._W?.includes({ title: 'Smiley Cam' })) {
-          album = await MediaLibrary.createAlbumAsync(
-            'Smiley Cam',
-            Platform.OS !== 'ios' ? asset : null,
-          )
+        const asset = await MediaLibrary.createAssetAsync(uri)
+        const album = await MediaLibrary.getAlbumsAsync()
+        const findAlbum = album.find((album) => album.title === 'Smiley Cam')
+        if (!findAlbum) {
+          await MediaLibrary.createAlbumAsync('Smiley Cam', asset, false)
+        } else {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], findAlbum, false)
         }
-      } else {
-        this.setState({ hasPermission: false })
+        setTimeout(() => {
+          this.setState({
+            smileDetected: false,
+          })
+        }, 1000)
       }
     } catch (error) {
-      console.log('error')
+      console.log(error)
     }
   }
 }
