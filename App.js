@@ -1,8 +1,14 @@
 import React from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { Camera } from 'expo-camera'
-import { ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native'
-import * as FileSystem from 'expo-file-system'
+import {
+  ActivityIndicator,
+  Dimensions,
+  TouchableOpacity,
+  Platform,
+} from 'react-native'
+import * as MediaLibrary from 'expo-media-library'
+import * as Permissions from 'expo-permissions'
 import styled from 'styled-components'
 import { hidden } from 'ansi-colors'
 import { Ionicons } from '@expo/vector-icons'
@@ -61,7 +67,6 @@ export default class App extends React.Component {
         this.setState({
           cameraType: Camera.Constants.Type.back,
         })
-        console.log('hi')
       } else {
         this.setState({
           cameraType: Camera.Constants.Type.front,
@@ -115,7 +120,7 @@ export default class App extends React.Component {
   onFacesDetected = ({ faces }) => {
     const face = faces[0]
     if (face) {
-      if (face.smilingProbability > 0.7) {
+      if (face.smilingProbability > 0.9) {
         this.setState({
           smileDetected: true,
         })
@@ -141,6 +146,24 @@ export default class App extends React.Component {
       })
     }
   }
-  savePhoto = async (uri) => {}
+  savePhoto = async (uri) => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync()
+      if (status === 'granted') {
+        const asset = MediaLibrary.createAssetAsync(uri)
+        let album = MediaLibrary.getAlbumsAsync('Smiley Cam')
+        if (!album?._W?.includes({ title: 'Smiley Cam' })) {
+          album = await MediaLibrary.createAlbumAsync(
+            'Smiley Cam',
+            Platform.OS !== 'ios' ? asset : null,
+          )
+        }
+      } else {
+        this.setState({ hasPermission: false })
+      }
+    } catch (error) {
+      console.log('error')
+    }
+  }
 }
 //------------------------------
