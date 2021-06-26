@@ -5,6 +5,7 @@ import { ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native'
 import styled from 'styled-components'
 import { hidden } from 'ansi-colors'
 import { Ionicons } from '@expo/vector-icons'
+import * as FaceDetector from 'expo-face-detector'
 
 //----------< Styled >----------
 const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
@@ -30,6 +31,7 @@ export default class App extends React.Component {
   state = {
     hasPermission: null,
     cameraType: Camera.Constants.Type.front,
+    smileDetected: false,
   }
 
   componentDidMount = async () => {
@@ -47,13 +49,14 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { hasPermission, cameraType } = this.state
+    const { hasPermission, cameraType, smileDetected } = this.state
 
     const switchCameraType = () => {
       if (cameraType === Camera.Constants.Type.front) {
         this.setState({
           cameraType: Camera.Constants.Type.back,
         })
+        console.log('hi')
       } else {
         this.setState({
           cameraType: Camera.Constants.Type.front,
@@ -61,6 +64,7 @@ export default class App extends React.Component {
       }
     }
 
+    //----------< Templete - Screen >----------
     if (hasPermission === true) {
       return (
         <CenterView>
@@ -72,6 +76,11 @@ export default class App extends React.Component {
               overflow: hidden,
             }}
             type={cameraType}
+            onFacesDetected={smileDetected ? null : this.onFacesDetected}
+            faceDetectorSettings={{
+              detectLandmarks: FaceDetector.Constants.Landmarks.all,
+              runClassifications: FaceDetector.Constants.Classifications.all,
+            }}
           />
           <IconBar>
             <TouchableOpacity onPress={switchCameraType}>
@@ -97,4 +106,16 @@ export default class App extends React.Component {
       )
     }
   }
+  onFacesDetected = ({ faces }) => {
+    const face = faces[0]
+    if (face) {
+      if (face.smilingProbability > 0.7) {
+        this.setState({
+          smileDetected: true,
+        })
+        console.log('take photo')
+      }
+    }
+  }
 }
+//------------------------------
